@@ -1,0 +1,37 @@
+diff -rupN busybox-1.19.2.orig/include/libbb.h busybox-1.19.2/include/libbb.h
+--- busybox-1.19.2.orig/include/libbb.h	2011-08-22 05:57:49.000000000 +0300
++++ busybox-1.19.2/include/libbb.h	2014-05-20 11:46:02.449323781 +0300
+@@ -12,6 +12,7 @@
+ 
+ #include "platform.h"
+ 
++#include <sys/resource.h>
+ #include <ctype.h>
+ #include <dirent.h>
+ #include <errno.h>
+diff -rupN busybox-1.19.2.orig/Makefile busybox-1.19.2/Makefile
+--- busybox-1.19.2.orig/Makefile	2011-09-06 05:14:53.000000000 +0300
++++ busybox-1.19.2/Makefile	2014-05-20 11:47:53.069325768 +0300
+@@ -309,18 +309,18 @@ MODFLAGS	= -DMODULE
+ CFLAGS_MODULE   = $(MODFLAGS)
+ AFLAGS_MODULE   = $(MODFLAGS)
+ LDFLAGS_MODULE  = -r
+-CFLAGS_KERNEL	=
++CFLAGS_KERNEL	= -m32
+ AFLAGS_KERNEL	=
+ 
+ 
+ # Use LINUXINCLUDE when you must reference the include/ directory.
+ # Needed to be compatible with the O= option
+-CFLAGS		:= $(CFLAGS)
++CFLAGS		:= $(CFLAGS) -m32
+ # Added only to final link stage of busybox binary
+ CFLAGS_busybox	:= $(CFLAGS_busybox)
+ CPPFLAGS	:= $(CPPFLAGS)
+ AFLAGS		:= $(AFLAGS)
+-LDFLAGS		:= $(LDFLAGS)
++LDFLAGS		:= $(LDFLAGS) -m32
+ LDLIBS		:=
+ 
+ # Read KERNELRELEASE from .kernelrelease (if it exists)
+Binary files busybox-1.19.2.orig/.Makefile.swp and busybox-1.19.2/.Makefile.swp differ
