@@ -1,0 +1,34 @@
+# DP: libgo: Fix TIOCNOTTY and TIOCSCTTY definitions
+
+--- a/src/libgo/mksysinfo.sh
++++ b/src/libgo/mksysinfo.sh
+@@ -101,6 +101,12 @@
+ #ifdef TIOCGWINSZ
+   TIOCGWINSZ_val = TIOCGWINSZ,
+ #endif
++#ifdef TIOCNOTTY
++  TIOCNOTTY_val = TIOCNOTTY,
++#endif
++#ifdef TIOCSCTTY
++  TIOCSCTTY_val = TIOCSCTTY,
++#endif
+ };
+ EOF
+ 
+@@ -616,6 +622,16 @@
+     echo 'const TIOCGWINSZ = _TIOCGWINSZ_val' >> ${OUT}
+   fi
+ fi
++if ! grep '^const TIOCNOTTY' ${OUT} >/dev/null 2>&1; then
++  if grep '^const _TIOCNOTTY_val' ${OUT} >/dev/null 2>&1; then
++    echo 'const TIOCNOTTY = _TIOCNOTTY_val' >> ${OUT}
++  fi
++fi
++if ! grep '^const TIOCSCTTY' ${OUT} >/dev/null 2>&1; then
++  if grep '^const _TIOCSCTTY_val' ${OUT} >/dev/null 2>&1; then
++    echo 'const TIOCSCTTY = _TIOCSCTTY_val' >> ${OUT}
++  fi
++fi
+ 
+ # The ioctl flags for terminal control
+ grep '^const _TC[GS]ET' gen-sysinfo.go | \

@@ -1,0 +1,14 @@
+# DP: libgo: Work around parse error of struct timex_ on ARM
+
+--- a/src/libgo/mksysinfo.sh
++++ b/src/libgo/mksysinfo.sh
+@@ -137,6 +137,9 @@
+ 
+ ${CC} -fdump-go-spec=gen-sysinfo.go -std=gnu99 -S -o sysinfo.s sysinfo.c
+ 
++# ARM
++sed -i '/type _timex/s/INVALID-bit-field/int32/g;/type _timex/s,^// ,,' gen-sysinfo.go
++
+ echo 'package syscall' > ${OUT}
+ echo 'import "unsafe"' >> ${OUT}
+ echo 'type _ unsafe.Pointer' >> ${OUT}

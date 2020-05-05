@@ -1,0 +1,134 @@
+Source: gccgo-4.7
+Section: devel
+Priority: optional
+Maintainer: Ubuntu Core developers <ubuntu-devel-discuss@lists.ubuntu.com>
+XSBC-Original-Maintainer: Debian GCC Maintainers <debian-gcc@lists.debian.org>
+Uploaders: Matthias Klose <doko@debian.org>
+Standards-Version: 3.9.3
+Build-Depends: dpkg-dev (>= 1.16.0~ubuntu4), debhelper (>= 5.0.62), g++-multilib [amd64 i386 kfreebsd-amd64 mips mipsel powerpc ppc64 s390 s390x sparc], libc6.1-dev (>= 2.13-0ubuntu6) [alpha ia64] | libc0.3-dev (>= 2.13-0ubuntu6) [hurd-i386] | libc0.1-dev (>= 2.13-0ubuntu6) [kfreebsd-i386 kfreebsd-amd64] | libc6-dev (>= 2.13-0ubuntu6), libc6-dev-amd64 [i386], libc6-dev-sparc64 [sparc], libc6-dev-s390 [s390x], libc6-dev-s390x [s390], libc6-dev-i386 [amd64], libc6-dev-powerpc [ppc64], libc6-dev-ppc64 [powerpc], libc0.1-dev-i386 [kfreebsd-amd64], lib32gcc1 [amd64 ppc64 kfreebsd-amd64 s390x], lib64gcc1 [i386 powerpc sparc s390], libc6-dev-mips64 [mips mipsel], libc6-dev-mipsn32 [mips mipsel], m4, libtool, autoconf2.64, automake (>= 1:1.11), automake (<< 1:1.12), libunwind7-dev (>= 0.98.5-6) [ia64], libatomic-ops-dev [ia64], zlib1g-dev, gawk, lzma, xz-utils, patchutils, binutils (>= 2.21.1) | binutils-multiarch (>= 2.21.1), binutils-hppa64 (>= 2.21.1) [hppa], gperf (>= 3.0.1), bison (>= 1:2.3), flex, gettext, texinfo (>= 4.3), locales [!knetbsd-i386 !knetbsd-alpha], procps, sharutils, libcloog-ppl-dev (>= 0.15.9-2~), libmpc-dev, libmpfr-dev (>= 3.0.0-9~), libgmp-dev (>= 2:5.0.1~), libelfg0-dev (>= 0.8.12), dejagnu [!m68k !hurd-i386 !hurd-alpha], autogen, realpath (>= 1.9.12), chrpath, lsb-release, make (>= 3.81), quilt
+Build-Conflicts: binutils-gold
+Homepage: http://gcc.gnu.org/
+XS-Vcs-Browser: http://svn.debian.org/viewsvn/gcccvs/branches/sid/gcc-4.7/
+XS-Vcs-Svn: svn://svn.debian.org/svn/gcccvs/branches/sid/gcc-4.7
+
+Package: gcc-4.7-base
+Architecture: any
+Multi-Arch: same
+Section: libs
+Priority: required
+Depends: ${misc:Depends}
+Replaces: ${base:Replaces}
+Breaks: gcj-4.6-base (<< 4.6.1-4~), gnat-4.6 (<< 4.6.1-5~), dehydra (<= 0.9.hg20110609-2)
+Description: GCC, the GNU Compiler Collection (base package)
+ This package contains files common to all languages and libraries
+ contained in the GNU Compiler Collection (GCC).
+
+Package: gccgo-4.7
+Architecture: any
+Priority: optional
+Depends: gcc-4.7-base (= ${gcc:Version}), libgo0 (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+Provides: go-compiler
+Suggests: ${go:multilib}, gccgo-4.7-doc, libgo0-dbg
+Description: GNU Go compiler
+ This is the GNU Go compiler, which compiles Go on platforms supported
+ by the gcc compiler. It uses the gcc backend to generate optimized code.
+
+Package: gccgo-4.7-multilib
+Architecture: amd64 i386 kfreebsd-amd64 mips mipsel powerpc ppc64 s390 s390x sparc
+Section: devel
+Priority: optional
+Depends: gcc-4.7-base (= ${gcc:Version}), gccgo-4.7 (= ${gcc:Version}), ${dep:libgobiarch}, ${shlibs:Depends}, ${misc:Depends}
+Suggests: ${dep:libgobiarchdbg}
+Description: GNU Go compiler (multilib files)
+ This is the GNU Go compiler, which compiles Go on platforms supported
+ by the gcc compiler.
+ .
+ On architectures with multilib support, the package contains files
+ and dependencies for the non-default multilib architecture(s).
+
+Package: gccgo-4.7-doc
+Architecture: all
+Section: doc
+Priority: optional
+Depends: gcc-4.7-base (>= ${gcc:SoftVersion}), dpkg (>= 1.15.4) | install-info, ${misc:Depends}
+Description: Documentation for the GNU Go compiler (gccgo)
+ Documentation for the GNU Go compiler in info format.
+
+Package: libgo0
+Section: libs
+Architecture: any
+Multi-Arch: same
+Pre-Depends: multiarch-support
+Provides: libgo0-armel [armel], libgo0-armhf [armhf]
+Priority: optional
+Depends: gcc-4.7-base (= ${gcc:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Runtime library for GNU Go applications
+ Library needed for GNU Go applications linked against the
+ shared library.
+
+Package: libgo0-dbg
+Section: debug
+Architecture: any
+Multi-Arch: same
+Provides: libgo0-dbg-armel [armel], libgo0-dbg-armhf [armhf]
+Priority: extra
+Depends: gcc-4.7-base (= ${gcc:Version}), libgo0 (= ${gcc:Version}), ${misc:Depends}
+Description: Runtime library for GNU Go applications (debug symbols)
+ Library needed for GNU Go applications linked against the
+ shared library.
+
+Package: lib64go0
+Section: libs
+Architecture: i386 powerpc sparc s390 mips mipsel
+Priority: optional
+Depends: gcc-4.7-base (= ${gcc:Version}), ${dep:libcbiarch}, ${shlibs:Depends}, ${misc:Depends}
+Description: Runtime library for GNU Go applications (64bit)
+ Library needed for GNU Go applications linked against the
+ shared library.
+
+Package: lib64go0-dbg
+Section: debug
+Architecture: i386 powerpc sparc s390 mips mipsel
+Priority: extra
+Depends: gcc-4.7-base (= ${gcc:Version}), lib64go0 (= ${gcc:Version}), ${misc:Depends}
+Description: Runtime library for GNU Go applications (64bit debug symbols)
+ Library needed for GNU Go applications linked against the
+ shared library.
+
+Package: lib32go0
+Section: libs
+Architecture: amd64 ppc64 kfreebsd-amd64 s390x
+Priority: optional
+Depends: gcc-4.7-base (= ${gcc:Version}), ${dep:libcbiarch}, ${shlibs:Depends}, ${misc:Depends}
+Conflicts: ${confl:lib32}
+Description: Runtime library for GNU Go applications (32bit)
+ Library needed for GNU Go applications linked against the
+ shared library.
+
+Package: lib32go0-dbg
+Section: debug
+Architecture: amd64 ppc64 kfreebsd-amd64 s390x
+Priority: extra
+Depends: gcc-4.7-base (= ${gcc:Version}), lib32go0 (= ${gcc:Version}), ${misc:Depends}
+Description: Runtime library for GNU Go applications (32 bit debug symbols)
+ Library needed for GNU Go applications linked against the
+ shared library.
+
+Package: libn32go0
+Section: libs
+Architecture: mips mipsel
+Priority: optional
+Depends: gcc-4.7-base (= ${gcc:Version}), ${dep:libcbiarch}, ${shlibs:Depends}, ${misc:Depends}
+Description: Runtime library for GNU Go applications (n32)
+ Library needed for GNU Go applications linked against the
+ shared library.
+
+Package: libn32go0-dbg
+Section: debug
+Architecture: mips mipsel
+Priority: extra
+Depends: gcc-4.7-base (= ${gcc:Version}), libn32go0 (= ${gcc:Version}), ${misc:Depends}
+Description: Runtime library for GNU Go applications (n32 debug symbols)
+ Library needed for GNU Go applications linked against the
+ shared library.
+
