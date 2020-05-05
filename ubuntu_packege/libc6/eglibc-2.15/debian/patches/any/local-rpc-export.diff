@@ -1,0 +1,58 @@
+--- a/sunrpc/Makefile
++++ b/sunrpc/Makefile
+@@ -55,7 +55,7 @@
+ 				    des_crypt.h)
+ headers-not-in-tirpc = $(addprefix rpc/,key_prot.h rpc_des.h) \
+ 		       $(rpcsvc:%=rpcsvc/%) rpcsvc/bootparam.h
+-headers = rpc/netdb.h
++headers = rpc/netdb.h $(headers-in-tirpc) $(headers-not-in-tirpc)
+ generated = $(rpcsvc:%.x=rpcsvc/%.h) $(rpcsvc:%.x=x%.c) $(rpcsvc:%.x=x%.stmp) \
+ 	    $(rpcsvc:%.x=rpcsvc/%.stmp) rpcgen
+ generated-dirs := rpcsvc
+
+--- a/nis/Makefile
++++ b/nis/Makefile
+@@ -25,9 +25,9 @@
+ 
+ aux			:= nis_hash
+ 
++headers			:= $(wildcard rpcsvc/*.[hx])
+ distribute		:= nss-nis.h nss-nisplus.h nis_intern.h Banner \
+-			   nisplus-parser.h nis_xdr.h nss \
+-			   $(wildcard rpcsvc/*.[hx])
++			   nisplus-parser.h nis_xdr.h nss
+ 
+ # These are the databases available for the nis (and perhaps later nisplus)
+ # service.  This must be a superset of the services in nss.
+
+--- a/include/libc-symbols.h
++++ b/include/libc-symbols.h
+@@ -647,7 +647,7 @@
+ # define libc_hidden_proto(name, attrs...) hidden_proto (name, ##attrs)
+ # define libc_hidden_def(name) hidden_def (name)
+ # define libc_hidden_weak(name) hidden_weak (name)
+-# define libc_hidden_nolink(name, version) hidden_nolink (name, libc, version)
++# define libc_hidden_nolink(name, version) hidden_def (name)
+ # define libc_hidden_ver(local, name) hidden_ver (local, name)
+ # define libc_hidden_data_def(name) hidden_data_def (name)
+ # define libc_hidden_data_weak(name) hidden_data_weak (name)
+
+--- a/NEWS
++++ b/NEWS
+@@ -42,16 +42,6 @@ Version 2.14
+   12724, 12734, 12738, 12746, 12766, 12775, 12777, 12782, 12788, 12792,
+   12795, 12811, 12813, 12814, 12841
+ 
+-* The RPC implementation in libc is obsoleted.  Old programs keep working
+-  but new programs cannot be linked with the routines in libc anymore.
+-  Programs in need of RPC functionality must be linked against TI-RPC.
+-  The TI-RPC implementation is IPv6 enabled and there are other benefits.
+-
+-  Visible changes of this change include (obviously) the inability to link
+-  programs using RPC functions without referencing the TI-RPC library and the
+-  removal of the RPC headers from the glibc headers.
+-  Implemented by Ulrich Drepper.
+-
+ * New Linux interfaces: clock_adjtime, name_to_handle_at, open_by_handle_at,
+   syncfs, setns, sendmmsg
+ 

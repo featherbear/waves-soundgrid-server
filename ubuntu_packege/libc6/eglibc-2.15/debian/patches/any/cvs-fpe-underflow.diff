@@ -1,0 +1,27 @@
+From f77f12320635155da728a3c1adb75ff9914cf686 Mon Sep 17 00:00:00 2001
+From: Aurelien Jarno <aurelien@aurel32.net>
+Date: Sun, 8 Apr 2012 22:45:13 +0000
+Subject: [PATCH] Use __kernel_standard instead of __kernel_standard_f in exp wrapper (bug 13705).
+
+diff --git a/sysdeps/ieee754/dbl-64/w_exp.c b/sysdeps/ieee754/dbl-64/w_exp.c
+index b584ed8..aa8ff76 100644
+--- a/sysdeps/ieee754/dbl-64/w_exp.c
++++ b/sysdeps/ieee754/dbl-64/w_exp.c
+@@ -31,12 +31,12 @@ __exp (double x)
+   if (__builtin_expect (x > o_threshold, 0))
+     {
+       if (_LIB_VERSION != _IEEE_)
+-	return __kernel_standard_f (x, x, 6);
++	return __kernel_standard (x, x, 6);
+     }
+   else if (__builtin_expect (x < u_threshold, 0))
+     {
+       if (_LIB_VERSION != _IEEE_)
+-	return __kernel_standard_f (x, x, 7);
++	return __kernel_standard (x, x, 7);
+     }
+ 
+   return __ieee754_exp (x);
+-- 
+1.7.3.4
+

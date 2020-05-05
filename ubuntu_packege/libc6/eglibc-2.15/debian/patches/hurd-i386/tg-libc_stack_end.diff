@@ -1,0 +1,70 @@
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Subject: [PATCH] Fix value of __libc_stack_end
+
+When using some libthread, we need to update the value of __libc_stack_end
+to what the libthread allocated. This requires making __libc_stack_end
+non-relro to be able to modify it.
+
+2011-08-24  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+* sysdeps/generic/ldsodefs.h [LIBC_STACK_END_NOT_RELRO] (__libc_stack_end): Do
+not use attribute_relro.
+* sysdeps/mach/hurd/dl-sysdep.h (LIBC_STACK_END_NOT_RELRO): Define.
+* sysdeps/mach/hurd/i386/init-first.c (init): Update __libc_stack_end to
+libthread-provided value.
+* sysdeps/mach/hurd/dl-sysdep.c (__libc_stack_end): Do not use attribute_relro.
+
+---
+http://www.cygwin.com/ml/libc-alpha/2011-08/msg00124.html
+
+ sysdeps/generic/ldsodefs.h          |    6 +++++-
+ sysdeps/mach/hurd/dl-sysdep.h       |    3 ++-
+ sysdeps/mach/hurd/i386/init-first.c |    2 ++
+ 3 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/sysdeps/generic/ldsodefs.h b/sysdeps/generic/ldsodefs.h
+index b24bff3..804d9ee 100644
+--- a/sysdeps/generic/ldsodefs.h
++++ b/sysdeps/generic/ldsodefs.h
+@@ -724,7 +724,11 @@ rtld_hidden_proto (_dl_make_stack_executable)
+    might use the variable which results in copy relocations on some
+    platforms.  But this does not matter, ld.so can always use the local
+    copy.  */
+-extern void *__libc_stack_end attribute_relro;
++extern void *__libc_stack_end
++#ifndef LIBC_STACK_END_NOT_RELRO
++     attribute_relro
++#endif
++     ;
+ rtld_hidden_proto (__libc_stack_end)
+ 
+ /* Parameters passed to the dynamic linker.  */
+diff --git a/sysdeps/mach/hurd/dl-sysdep.h b/sysdeps/mach/hurd/dl-sysdep.h
+index 4b21b77..5b86fec 100644
+--- a/sysdeps/mach/hurd/dl-sysdep.h
++++ b/sysdeps/mach/hurd/dl-sysdep.h
+@@ -25,7 +25,8 @@
+ #define RTLD_PRIVATE_ERRNO 0
+ 
+ #ifdef SHARED
+-/* _dl_argv cannot be attribute_relro, because the stack-switching
++/* _dl_argv and __libc_stack_end cannot be attribute_relro, because the stack-switching
+    libc initializer for using cthreads might write into it.  */
+ # define DL_ARGV_NOT_RELRO 1
++# define LIBC_STACK_END_NOT_RELRO 1
+ #endif
+diff --git a/sysdeps/mach/hurd/i386/init-first.c b/sysdeps/mach/hurd/i386/init-first.c
+index 60823bd..9e5b723 100644
+--- a/sysdeps/mach/hurd/i386/init-first.c
++++ b/sysdeps/mach/hurd/i386/init-first.c
+@@ -212,6 +212,8 @@ init (int *data)
+ 
+       void switch_stacks (void);
+ 
++      __libc_stack_end = newsp;
++
+       /* Copy per-thread variables from that temporary
+ 	 area onto the new cthread stack.  */
+       memcpy (__hurd_threadvar_location_from_sp (0, newsp),
+-- 
+tg: (0234227..) t/libc_stack_end (depends on: baseline)

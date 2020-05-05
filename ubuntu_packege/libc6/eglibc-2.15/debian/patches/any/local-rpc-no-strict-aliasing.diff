@@ -1,0 +1,24 @@
+--- a/nis/Makefile
++++ b/nis/Makefile
+@@ -78,6 +78,8 @@ libnss_nisplus-inhibit-o = $(filter-out .os,$(object-suffixes))
+ 
+ include ../Rules
+ 
++CFLAGS-nis_findserv.c += -fno-strict-aliasing
++CFLAGS-ypclnt.c += -fno-strict-aliasing
+ 
+ $(objpfx)libnss_compat.so: $(objpfx)libnsl.so$(libnsl.so-version)
+ $(objpfx)libnss_nis.so: $(objpfx)libnsl.so$(libnsl.so-version) \
+--- a/sunrpc/Makefile
++++ b/sunrpc/Makefile
+@@ -165,6 +165,10 @@ CFLAGS-openchild.c = -fexceptions
+ 
+ CPPFLAGS += -D_RPC_THREAD_SAFE_
+ 
++CFLAGS-clnt_tcp.c += -fno-strict-aliasing
++CFLAGS-clnt_udp.c += -fno-strict-aliasing
++CFLAGS-clnt_unix.c += -fno-strict-aliasing
++
+ $(objpfx)tst-getmyaddr: $(common-objpfx)linkobj/libc.so
+ $(objpfx)tst-xdrmem: $(common-objpfx)linkobj/libc.so
+ $(objpfx)tst-xdrmem2: $(common-objpfx)linkobj/libc.so

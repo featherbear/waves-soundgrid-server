@@ -1,0 +1,36 @@
+commit a728a38fb658f8b2f0acbea8a586db8bd054f3fe
+Author: H.J. Lu <hjl.tools@gmail.com>
+Date:   Wed Jun 6 10:11:14 2012 -0700
+
+    Check __SSE_MATH__ in x86_64 feraiseexcept
+
+diff --git a/sysdeps/x86_64/fpu/bits/fenv.h b/sysdeps/x86_64/fpu/bits/fenv.h
+index bb790c9..b2c01c4 100644
+--- a/sysdeps/x86_64/fpu/bits/fenv.h
++++ b/sysdeps/x86_64/fpu/bits/fenv.h
+@@ -109,7 +109,12 @@ __NTH (feraiseexcept (int __excepts))
+ 	  /* One example of a invalid operation is 0.0 / 0.0.  */
+ 	  float __f = 0.0;
+ 
++# ifdef __SSE_MATH__
+ 	  __asm__ __volatile__ ("divss %0, %0 " : : "x" (__f));
++# else
++	  __asm__ __volatile__ ("fdiv %%st, %%st(0); fwait"
++				: "=t" (__f) : "0" (__f));
++# endif
+ 	  (void) &__f;
+ 	}
+       if ((FE_DIVBYZERO & __excepts) != 0)
+@@ -117,7 +122,12 @@ __NTH (feraiseexcept (int __excepts))
+ 	  float __f = 1.0;
+ 	  float __g = 0.0;
+ 
++# ifdef __SSE_MATH__
+ 	  __asm__ __volatile__ ("divss %1, %0" : : "x" (__f), "x" (__g));
++# else
++	  __asm__ __volatile__ ("fdivp %%st, %%st(1); fwait"
++				: "=t" (__f) : "0" (__f), "u" (__g) : "st(1)");
++# endif
+ 	  (void) &__f;
+ 	}
+ 

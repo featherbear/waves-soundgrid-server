@@ -1,0 +1,21 @@
+Backport from upstream commit:
+ http://sourceware.org/git/?p=glibc.git;a=commitdiff;h=2174c6dd8555f654c30df2f8f3321b69e0f736f8
+
+--- a/bits/byteswap.h	2012-01-03 14:42:51.000000000 -0700
++++ b/bits/byteswap.h	2012-08-09 15:15:06.722723756 -0600
+@@ -27,12 +27,13 @@
+ 
+ /* Swap bytes in 16 bit value.  */
+ #define __bswap_constant_16(x) \
+-     ((((x) >> 8) & 0xffu) | (((x) & 0xffu) << 8))
++	((unsigned short int)((((x) >> 8) & 0xffu) | (((x) & 0xffu) << 8)))
+ 
+ #ifdef __GNUC__
+ # define __bswap_16(x) \
+     (__extension__							      \
+-     ({ unsigned short int __bsx = (x); __bswap_constant_16 (__bsx); }))
++     ({ unsigned short int __bsx = (unsigned short int) (x);		      \
++       __bswap_constant_16 (__bsx); }))
+ #else
+ static __inline unsigned short int
+ __bswap_16 (unsigned short int __bsx)

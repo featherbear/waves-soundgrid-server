@@ -1,0 +1,5 @@
+#include "libc6.symbols.common"
+ld-linux-armhf.so.3 #PACKAGE# (>= 2.15-0ubuntu8)
+#include "symbols.wildcards"
+libc.so.6 #PACKAGE# (>= 2.15-0ubuntu8)
+#include "symbols.wildcards"

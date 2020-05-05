@@ -1,0 +1,21 @@
+2014-12-16  Florian Weimer  <fweimer@redhat.com>
+
+	[BZ #17630]
+	* resolv/nss_dns/dns-network.c (getanswer_r): Iterate over alias
+	names.
+
+Index: eglibc-2.15/resolv/nss_dns/dns-network.c
+===================================================================
+--- eglibc-2.15.orig/resolv/nss_dns/dns-network.c	2015-02-25 09:10:01.975456530 -0500
++++ eglibc-2.15/resolv/nss_dns/dns-network.c	2015-02-25 09:10:01.939456253 -0500
+@@ -399,8 +399,8 @@
+ 
+ 	case BYNAME:
+ 	  {
+-	    char **ap = result->n_aliases++;
+-	    while (*ap != NULL)
++	    char **ap;
++	    for (ap = result->n_aliases; *ap != NULL; ++ap)
+ 	      {
+ 		/* Check each alias name for being of the forms:
+ 		   4.3.2.1.in-addr.arpa		= net 1.2.3.4

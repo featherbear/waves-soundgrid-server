@@ -1,0 +1,18 @@
+2014-06-03  Andreas Schwab  <schwab@suse.de>
+
+	[BZ #15946]
+	* resolv/res_send.c (send_dg): Reload file descriptor after
+	calling reopen.
+
+Index: eglibc-2.15/resolv/res_send.c
+===================================================================
+--- eglibc-2.15.orig/resolv/res_send.c	2015-02-25 09:09:49.707361749 -0500
++++ eglibc-2.15/resolv/res_send.c	2015-02-25 09:09:49.691361625 -0500
+@@ -1342,6 +1342,7 @@
+ 					retval = reopen (statp, terrno, ns);
+ 					if (retval <= 0)
+ 						return retval;
++					pfd[0].fd = EXT(statp).nssocks[ns];
+ 				}
+ 			}
+ 			goto wait;

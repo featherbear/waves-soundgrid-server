@@ -1,0 +1,174 @@
+2012-06-21  Joseph Myers  <joseph@codesourcery.com>
+
+       [BZ #14273]
+       * sysdeps/ieee754/dbl-64/wordsize-64/e_cosh.c (__ieee754_cosh):
+       Clear sign bit of 64-bit integer value before comparing against
+       overflow value.
+ 
+2012-06-05  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
+
+       * sysdeps/ieee754/ldbl-128ibm/e_fmodl.c: Fix for wrong ldbl128-ibm
+       fmodl commit.
+
+2012-06-04  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
+
+       * sysdeps/ieee754/ldbl-128ibm/e_fmodl.c (__ieee754_fmodl): Fix
+       subnormal exponent extraction and add some __builtin_expect.
+       * sysdeps/ieee754/ldbl-128ibm/math_ldbl.h (ldbl_extract_mantissa):
+       Fix for subnormal mantissa calculation.
+
+2012-06-01  Joseph Myers  <joseph@codesourcery.com>
+
+       [BZ #14048]
+       * sysdeps/ieee754/dbl-64/wordsize-64/e_fmod.c (__ieee754_fmod):
+       Use int64_t for variable i.
+
+diff --git a/sysdeps/ieee754/dbl-64/wordsize-64/e_cosh.c b/sysdeps/ieee754/dbl-64/wordsize-64/e_cosh.c
+index 41dc42c..b8aadab 100644
+--- a/sysdeps/ieee754/dbl-64/wordsize-64/e_cosh.c
++++ b/sysdeps/ieee754/dbl-64/wordsize-64/e_cosh.c
+@@ -67,6 +67,7 @@ __ieee754_cosh (double x)
+     /* |x| in [log(maxdouble), overflowthresold] */
+ 	int64_t fix;
+ 	EXTRACT_WORDS64(fix, x);
++	fix &= UINT64_C(0x7fffffffffffffff);
+ 	if (fix <= UINT64_C(0x408633ce8fb9f87d)) {
+ 	    w = __ieee754_exp(half*fabs(x));
+ 	    t = half*w;
+diff --git a/sysdeps/ieee754/dbl-64/wordsize-64/e_fmod.c b/sysdeps/ieee754/dbl-64/wordsize-64/e_fmod.c
+index 0e20571..5158196 100644
+--- a/sysdeps/ieee754/dbl-64/wordsize-64/e_fmod.c
++++ b/sysdeps/ieee754/dbl-64/wordsize-64/e_fmod.c
+@@ -24,8 +24,8 @@ static const double one = 1.0, Zero[] = {0.0, -0.0,};
+ double
+ __ieee754_fmod (double x, double y)
+ {
+-	int32_t n,i,ix,iy;
+-	int64_t hx,hy,hz,sx;
++	int32_t n,ix,iy;
++	int64_t hx,hy,hz,sx,i;
+ 
+ 	EXTRACT_WORDS64(hx,x);
+ 	EXTRACT_WORDS64(hy,y);
+diff --git a/sysdeps/ieee754/ldbl-128ibm/e_fmodl.c b/sysdeps/ieee754/ldbl-128ibm/e_fmodl.c
+index 4ad59a0..033fde7 100644
+--- a/sysdeps/ieee754/ldbl-128ibm/e_fmodl.c
++++ b/sysdeps/ieee754/ldbl-128ibm/e_fmodl.c
+@@ -27,7 +27,7 @@ static const long double one = 1.0, Zero[] = {0.0, -0.0,};
+ long double
+ __ieee754_fmodl (long double x, long double y)
+ {
+-	int64_t n,hx,hy,hz,ix,iy,sx,i;
++	int64_t n,hx,hy,hz,ix,iy,sx, i;
+ 	u_int64_t lx,ly,lz;
+ 	int temp;
+ 
+@@ -38,41 +38,42 @@ __ieee754_fmodl (long double x, long double y)
+ 	hy &= 0x7fffffffffffffffLL;		/* |y| */
+ 
+     /* purge off exception values */
+-	if((hy|(ly&0x7fffffffffffffff))==0||(hx>=0x7ff0000000000000LL)|| /* y=0,or x not finite */
+-	  (hy>0x7ff0000000000000LL))	/* or y is NaN */
++	if(__builtin_expect((hy|(ly&0x7fffffffffffffff))==0 ||
++			    (hx>=0x7ff0000000000000LL)|| /* y=0,or x not finite */
++			    (hy>0x7ff0000000000000LL),0))	/* or y is NaN */
+ 	    return (x*y)/(x*y);
+-	if(hx<=hy) {
++	if(__builtin_expect(hx<=hy,0)) {
+ 	    if((hx<hy)||(lx<ly)) return x;	/* |x|<|y| return x */
+ 	    if(lx==ly)
+ 		return Zero[(u_int64_t)sx>>63];	/* |x|=|y| return x*0*/
+ 	}
+ 
+     /* determine ix = ilogb(x) */
+-	if(hx<0x0010000000000000LL) {	/* subnormal x */
++	if(__builtin_expect(hx<0x0010000000000000LL,0)) {	/* subnormal x */
+ 	    if(hx==0) {
+ 		for (ix = -1043, i=lx; i>0; i<<=1) ix -=1;
+ 	    } else {
+-		for (ix = -1022, i=hx<<19; i>0; i<<=1) ix -=1;
++		for (ix = -1022, i=(hx<<11); i>0; i<<=1) ix -=1;
+ 	    }
+ 	} else ix = (hx>>52)-0x3ff;
+ 
+     /* determine iy = ilogb(y) */
+-	if(hy<0x0010000000000000LL) {	/* subnormal y */
++	if(__builtin_expect(hy<0x0010000000000000LL,0)) {	/* subnormal y */
+ 	    if(hy==0) {
+ 		for (iy = -1043, i=ly; i>0; i<<=1) iy -=1;
+ 	    } else {
+-		for (iy = -1022, i=hy<<19; i>0; i<<=1) iy -=1;
++		for (iy = -1022, i=(hy<<11); i>0; i<<=1) iy -=1;
+ 	    }
+ 	} else iy = (hy>>52)-0x3ff;
+ 
+     /* Make the IBM extended format 105 bit mantissa look like the ieee854 112
+-       bit mantissa so the following operatations will give the correct
++       bit mantissa so the following operations will give the correct
+        result.  */
+ 	ldbl_extract_mantissa(&hx, &lx, &temp, x);
+ 	ldbl_extract_mantissa(&hy, &ly, &temp, y);
+ 
+     /* set up {hx,lx}, {hy,ly} and align y to x */
+-	if(ix >= -1022)
++	if(__builtin_expect(ix >= -1022, 1))
+ 	    hx = 0x0001000000000000LL|(0x0000ffffffffffffLL&hx);
+ 	else {		/* subnormal x, shift x to normal */
+ 	    n = -1022-ix;
+@@ -84,7 +85,7 @@ __ieee754_fmodl (long double x, long double y)
+ 		lx = 0;
+ 	    }
+ 	}
+-	if(iy >= -1022)
++	if(__builtin_expect(iy >= -1022, 1))
+ 	    hy = 0x0001000000000000LL|(0x0000ffffffffffffLL&hy);
+ 	else {		/* subnormal y, shift y to normal */
+ 	    n = -1022-iy;
+@@ -118,7 +119,7 @@ __ieee754_fmodl (long double x, long double y)
+ 	    hx = hx+hx+(lx>>63); lx = lx+lx;
+ 	    iy -= 1;
+ 	}
+-	if(iy>= -1022) {	/* normalize output */
++	if(__builtin_expect(iy>= -1022,0)) {	/* normalize output */
+ 	    x = ldbl_insert_mantissa((sx>>63), iy, hx, lx);
+ 	} else {		/* subnormal output */
+ 	    n = -1022 - iy;
+diff --git a/sysdeps/ieee754/ldbl-128ibm/math_ldbl.h b/sysdeps/ieee754/ldbl-128ibm/math_ldbl.h
+index d055d65..be9ac71 100644
+--- a/sysdeps/ieee754/ldbl-128ibm/math_ldbl.h
++++ b/sysdeps/ieee754/ldbl-128ibm/math_ldbl.h
+@@ -6,20 +6,20 @@
+ #include <ieee754.h>
+   
+ static inline void
+-ldbl_extract_mantissa (int64_t *hi64, u_int64_t *lo64, int *exp, long double x)
++ldbl_extract_mantissa (int64_t *hi64, uint64_t *lo64, int *exp, long double x)
+ {
+   /* We have 105 bits of mantissa plus one implicit digit.  Since
+      106 bits are representable we use the first implicit digit for
+      the number before the decimal point and the second implicit bit
+      as bit 53 of the mantissa.  */
+-  unsigned long long hi, lo;
++  uint64_t hi, lo;
+   int ediff;
+   union ibm_extended_long_double eldbl;
+   eldbl.d = x;
+   *exp = eldbl.ieee.exponent - IBM_EXTENDED_LONG_DOUBLE_BIAS;
+ 
+-  lo = ((long long)eldbl.ieee.mantissa2 << 32) | eldbl.ieee.mantissa3;
+-  hi = ((long long)eldbl.ieee.mantissa0 << 32) | eldbl.ieee.mantissa1;
++  lo = ((int64_t)eldbl.ieee.mantissa2 << 32) | eldbl.ieee.mantissa3;
++  hi = ((int64_t)eldbl.ieee.mantissa0 << 32) | eldbl.ieee.mantissa1;
+   /* If the lower double is not a denomal or zero then set the hidden
+      53rd bit.  */
+   if (eldbl.ieee.exponent2 > 0x001)
+@@ -31,8 +31,8 @@ ldbl_extract_mantissa (int64_t *hi64, u_int64_t *lo64, int *exp, long double x)
+       ediff = eldbl.ieee.exponent - eldbl.ieee.exponent2;
+       if (ediff > 53)
+ 	lo = lo >> (ediff-53);
++      hi |= (1ULL << 52);
+     }
+-  hi |= (1ULL << 52);
+   
+   if ((eldbl.ieee.negative != eldbl.ieee.negative2)
+       && ((eldbl.ieee.exponent2 != 0) && (lo != 0LL)))
